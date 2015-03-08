@@ -6,7 +6,7 @@ Sample usage:
 
 `my_list = ValueList()`
 
-`my_list.add_value_to_parse('TPR', NP + ' total packets received', 'Ip:')`
-`my_list.add_value_to_parse('DU', 'destination unreachable: ' + NP, 'Icmp:', 'ICMP input histogram:')`
+`my_list.add_value_to_parse('TPR.log', NP + ' total packets received', 'Ip:')`
+`my_list.add_value_to_parse('DU.log', 'destination unreachable: ' + NP, 'Icmp:', 'ICMP input histogram:')`
 
-`my_list.write_csv(r'output.csv')`
+`my_list.write_csv()`
