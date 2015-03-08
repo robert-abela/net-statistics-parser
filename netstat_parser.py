@@ -23,15 +23,17 @@
 
 import os
 import re
-import csv
+import datetime
+import time
 
 NP = r'(\d*)'   #number pattern
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 class Value:
     '''Internal class used to facilitate the ValueList management.'''
-    def __init__(self, header, pattern, section, subsection = None):
+    def __init__(self, file_name, pattern, section, subsection = None):
         '''Contructor to create a new value that still needs to be parsed.'''
-        self.header = header
+        self.file_name = file_name
         self.pattern = pattern
         self.section = section
         self.subsection = subsection
@@ -76,51 +78,46 @@ class ValueList:
         '''Contructor for the ValueList class.'''
         self.values = []
     
-    def write_csv(self, path):
+    def write_csv(self):
         '''
         ``netstat -es`` command is called and the parsing takes place. At the 
         end this function writes the values extracted to a CSV file in the path 
-        supplied. This file is always written over.
+        supplied for each entry. The new values are appended.
         
         Return: None
         '''
-        headers_row = []
-        values_row = []
+        now = time.time()
+        time_stamp = datetime.datetime.fromtimestamp(now).strftime(DATE_FORMAT)
         
         for value in self.values:
             value.read_value()
-            headers_row.append(value.header)
-            values_row.append(value.value)
             
-        with open(path, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(headers_row)
-            writer.writerow(values_row)
+            with open(value.file_name, 'a') as csvfile:
+                csvfile.write(time_stamp)
+                csvfile.write(',')
+                csvfile.write(value.value)
+                csvfile.write('\r\n')
     
-    
-    def add_value_to_parse(self, header, pattern, section, subsection = None):
+    def add_value_to_parse(self, file_name, pattern, section, subsection = None):
         '''
         Adds a new value that needs to be read from the netstat output.
         
-        Parameter description: header will be used as the CSV heading for this 
+        Parameter description: file_name will be used as the CSV file for this 
         value. pattern will be used to match the line and extract a part of it. 
         section is the heading in netstat output where the value appears and 
         (optional) subsection is to be used only when applicable.
         
         Return: None
         '''
-        self.values.append(Value(header, pattern, section, subsection))
+        self.values.append(Value(file_name, pattern, section, subsection))
 
-###############################################################################
-# Edit only below this comment
 ###############################################################################
 
 my_list = ValueList()
 
-my_list.add_value_to_parse('BSR', NP + ' bad segments received.','Tcp:')
-my_list.add_value_to_parse('OO', 'OutOctets: ' + NP, 'IpExt:')
-my_list.add_value_to_parse('DU', 'destination unreachable: ' + NP, 'Icmp:', 'ICMP input histogram:')
+my_list.add_value_to_parse('BSR.log', NP + ' bad segments received.','Tcp:')
+my_list.add_value_to_parse('OO.log', 'OutOctets: ' + NP, 'IpExt:')
+my_list.add_value_to_parse('DU.log', 'destination unreachable: ' + NP, 'Icmp:', 'ICMP input histogram:')
 
-# Once ready adding values to be parsed, do the parsing and output to csv 
-# (it will be over written every time).
-my_list.write_csv(r'output.csv')
+# Once ready adding values to be parsed, do the parsing and append output to csv 
+my_list.write_csv()
