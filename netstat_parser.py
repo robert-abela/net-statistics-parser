@@ -22,6 +22,7 @@
 #See: https://github.com/robert-abela/net-statistics-parser
 
 import os
+import sys
 import re
 import datetime
 import time
@@ -38,10 +39,34 @@ class Value:
         self.section = section
         self.subsection = subsection
 
-    def read_value(self):
+    def write_line(self, time_stamp):
         '''Calls ``netstat -es`` and parses the output to find the desired 
-        value.'''
+        value. Converts to a CSV line: timestape,value,change. Finally writes'''
         self.value = self.__parse_value()
+        line = self.__to_line(time_stamp)
+        with open(self.file_name, 'a') as csvfile:
+            csvfile.write(line)
+            csvfile.write('\r\n')
+        
+    def __get_change_in_value(self):
+        '''Gets the difference (in string format)from the last value from a 
+        particular file, or 'unkonwn' if not found'''
+        try:
+            with open(self.file_name, 'r') as log_file:
+                log_list = log_file.readlines()
+                log_entry = log_list[-2]
+                previous_value = log_entry.split(',')[1]
+                difference = int(self.value) - int(previous_value)
+                return str(difference)
+        except:
+            return 'unknown'
+            
+    def __to_line(self, time_stamp):
+        try:
+            return (time_stamp + ',' + self.value + ',' + self.__get_change_in_value())
+        except Exception:
+            print(sys.exc_info())
+            return 'Error'
 
     def __parse_value(self):
         current_section = ''
@@ -90,13 +115,7 @@ class ValueList:
         time_stamp = datetime.datetime.fromtimestamp(now).strftime(DATE_FORMAT)
         
         for value in self.values:
-            value.read_value()
-            
-            with open(value.file_name, 'a') as csvfile:
-                csvfile.write(time_stamp)
-                csvfile.write(',')
-                csvfile.write(value.value)
-                csvfile.write('\r\n')
+            value.write_line(time_stamp)
     
     def add_value_to_parse(self, file_name, pattern, section, subsection = None):
         '''
