@@ -54,7 +54,7 @@ class Value:
         try:
             with open(self.file_name, 'r') as log_file:
                 log_list = log_file.readlines()
-                log_entry = log_list[-2]
+                log_entry = log_list[-1]
                 previous_value = log_entry.split(',')[1]
                 difference = int(self.value) - int(previous_value)
                 return str(difference)
