@@ -49,8 +49,8 @@ class Value:
             csvfile.write('\r\n')
         
     def __get_change_in_value(self):
-        '''Gets the difference (in string format)from the last value from a 
-        particular file, or 'unkonwn' if not found'''
+        '''Gets the difference (in string format) from the last value from a 
+        particular file, or 'unknown' if not found'''
         try:
             with open(self.file_name, 'r') as log_file:
                 log_list = log_file.readlines()
@@ -100,7 +100,7 @@ class Value:
         
 class ValueList:
     def __init__(self):
-        '''Contructor for the ValueList class.'''
+        '''Constructor for the ValueList class.'''
         self.values = []
     
     def write_csv(self):
